@@ -2,169 +2,167 @@ import numpy as np
 from math import pi
 
 
-'''leer archivo_datos_lineas(archivo): El archivo a leer debe ser un archivo de texto y consistir en 4 columnas
-NOTA: ¡ LA PRIMERA LÍNEA DEL ARCHIVO NO SE LEE POR SER LAS CABECERAS DE TABLA!
-columna 1 y 2 : nodos enumerados 
-columna 3: impedancia entre los nodos (impedancia de la línea)
-columna 4: susceptancia en paralelo
- retorna una la lista [n, nodos1, nodos2, admitancias, susceptancias]
- nodos1 y nodos2 son listas con los números de nodos
- admitancias es una lista con las admitancias entre los nodos
- susceptancias es una lista que contiene las susceptancias en paralelo
- n es el número de nada'''
+'''read_line_data_file(file): The file to be read must be a text file and consist of 4 columns.
+NOTE: THE FIRST LINE OF THE FILE IS NOT READ BECAUSE IT IS THE TABLE HEADERS!
+column 1 and 2 : numbered nodes 
+column 3 : impedance between the nodes (line impedance)
+column 4: parallel susceptance
+ returns a list [n, nodes1, nodes2, admittances, susceptances].
+ nodes1 and nodes2 are lists with the numbers of nodes
+ admittances is a list containing the admittances between nodes
+ susceptances is a list containing the parallel susceptances
+ n is the number of nodes'''
 
 
-def leer_archivo_datos_lineas(archivo):  # el argumento debe ser el nombre del archivo
-    nodos1 = []  # columna 1 de nodos
-    nodos2 = []  # columna 2 de nodos
-    admitancias = []  # admitancias entre nodos
-    susceptancias = []
+def read_line_data_file(file):  # the argument is the file name
+    nodes1 = []
+    nodes2 = []
+    admittances = []
+    susceptances = []
 
-    with open(archivo, "r") as f:
-        lineas = sum(1 for i in f)  # calculando número de líneas del archivo (que son también las líneas del sistema)
-        f.seek(0)  # regresando el puntero al inicio del archivo
+    with open(file, "r") as f:
+        lines = sum(1 for i in f)  # calculating number of lines of the file (which are also the system lines)
+        f.seek(0)  # returning the pointer to the beginning of the file
         f.readline()
-        for i in range(lineas-1):
+        for i in range(lines-1):
             aux = f.readline().split()
-            nodos1.append(int(aux[0]))
-            nodos2.append(int(aux[1]))
-            admitancias.append(1 / complex(aux[2]))  # conversión de impedancias a admitancias
-            susceptancias.append(complex(aux[3]))
+            nodes1.append(int(aux[0]))
+            nodes2.append(int(aux[1]))
+            admittances.append(1 / complex(aux[2]))  # impedance to admittance conversion
+            susceptances.append(complex(aux[3]))
 
-    n = max(max(nodos1), max(nodos2))  # numero de nodos del sistema
-    return [n, nodos1, nodos2, admitancias, susceptancias]
-
-
-''' leer_archivo_datos_de_barras(archivo): el archivo debe ser un .txt, de 7 columnas
-NOTA: ¡ LA PRIMERA LÍNEA DEL ARCHIVO NO SE LEE POR SE LAS CABECERAS DE TABLA!
-columna 1: nodos enumerados
-columna 2: potencia real generada (MW)
-columna 3: Potencia reactiva generada (MVAR)
-columna 4: potencia real demandada(MW)
-columna 5 : potencia reactiva demandada(MVAR)
-columna 6: impedancia del generador conectado a la barra en P.U (bases del sistema)
-columna 7: impedancia equivalente de las cargas conectadas a la barra en P.U (bases del sistema)
-retorna las potencias generadas y demandadas en P.U y las admitancias conectadas directamente a los nodos'''
+    n = max(max(nodes1), max(nodes2))  # number of nodes of the system
+    return [n, nodes1, nodes2, admittances, susceptances]
 
 
-def leer_archivo_datos_de_barras(archivo):  # retorna las potencias generadas y demandadas en por unidad
+'''' read_bus_data_file(file): the file must be a txt file, consisting of 7 columns.
+NOTE: THE FIRST LINE OF THE FILE IS NOT READ BECAUSE IT IS THE TABLE HEADERS!
+column 1: enumerated nodes
+column 2: real power generated (MW)
+column 3: generated reactive power (MVAR)
+column 4: real power demanded (MW)
+column 5: reactive power demanded (MVAR)
+column 6: impedance of the generator connected to the bus in P.U (system bases)
+column 7: equivalent impedance of the loads connected to the bus in P.U (system bases)
+returns the power generated and demanded in P.U and the admittances directly connected to the nodes'''
+
+
+def read_bus_data_file(file):  # returns the generated and demanded power in per unit
     pg = []
     qg = []
     pd = []
     qd = []
-    y_nodos = []  # admitancias totales conectadas a la barra (sin tomar en cuenta la de las líneas)
-    tipo_de_nodo = []
+    y_nodes = []  # total admittances connected to the bus (without taking into account that of the lines)
+    node_type = []
     mag = []
     ang = []
-    mva_base = float(input("\n MVA base del sistema? "))
-    with open(archivo, "r") as f:
-        lineas = sum(1 for i in f)
+    mva_base = float(input("\n MVA system base? "))
+    with open(file, "r") as f:
+        lines = sum(1 for i in f)
         f.seek(0)
         f.readline()
-        for i in range(lineas-1):
+        for i in range(lines - 1):
             aux = f.readline().split()
-            tipo_de_nodo.append(aux[0])
+            node_type.append(aux[0])
             pg.append(float(aux[1])/mva_base)
             qg.append(float(aux[2])/mva_base)
             pd.append(float(aux[3])/mva_base)
             qd.append(float(aux[4])/mva_base)
-            if complex(aux[5]) != 0:  # z generador
-                y_nodos.append(1/complex(aux[5]))
+            if complex(aux[5]) != 0:  # generador impedance
+                y_nodes.append(1 / complex(aux[5]))
             else:
-                y_nodos.append(0)
+                y_nodes.append(0)
             if complex(aux[6]) != 0j:
-                y_nodos[i] += (1/complex(aux[6]))  # z equivalente de cargas en el nodo
+                y_nodes[i] += (1 / complex(aux[6]))  # equivalent impedance of the load in the node
             mag.append(float(aux[7]))
             ang.append(float(aux[8])*pi/180)
 
-    return [pg, qg, pd, qd, y_nodos, tipo_de_nodo, mag, ang]
+    return [pg, qg, pd, qd, y_nodes, node_type, mag, ang]
 
 
-'''ybus_zbus() construye la matriz ybus de nXn (siendo n el número de nodos) haciendo uso de la función valores 
- para asignarle valor a cada posición de la matriz. Una vez construida la matriz ybus, la invierte para obtener zbus.
- En los lenguajes de programación los indices en los arreglos empiezan a contar desde el cero y en el SEP
- (sistema eléctrico de potencia) los nodos se enumeran a partir del 1, entonces a la función "valores" se le 
- envían los indices incrementados en 1, ya que esta hace uso de las listas que contienen los nodos enumerados '''
-# Recibe como argumento n, nodos1, nodos2, admitancias.
-# retorna la lista [ybus, zbus], donde ybus y zbus son arreglos np
-# genera dos archivos de texto con los nombres YBUS Y ZBUS con los datos de los arreglos ybus y zbus respectivamente
+'''ybus_zbus() constructs the ybus array of nXn (where n is the number of nodes) using the function values 
+ to assign a value to each position in the matrix. Once the ybus matrix is constructed, it inverts it to obtain zbus.
+ In programming languages the indices in the arrays start counting from zero and in the (SEP)
+ (electrical power system) the nodes are enumerated starting from 1, then the function "values" is sent the indices incremented by 1, 
+ since it makes use of the lists that contain the enumerated nodes '''
+# returns the list [ybus, zbus], where ybus and zbus are np arrays.
+# generates two text files named YBUS and ZBUS with the data of the ybus and zbus arrays respectively.
 
 
-def ybus_zbus(datos_de_lineas, datos_de_barras):  # función que construye la matriz YBUS
-    n = datos_de_lineas[0]  # número de nodos del sistema
-    nodos1 = datos_de_lineas[1]
-    nodos2 = datos_de_lineas[2]
-    admitancias = datos_de_lineas[3]
-    susceptancias = datos_de_lineas[4]
-    y_nodos = datos_de_barras[4]
-    ybus = np.empty((n, n), complex)  # construye una matriz vacía de nXn
+def ybus_zbus(line_data, bus_data):  # función que construye la matriz YBUS
+    n = line_data[0]  # nombre of system nodes
+    nodes1 = line_data[1]
+    nodes2 = line_data[2]
+    admittances = line_data[3]
+    susceptancias = line_data[4]
+    y_nodos = bus_data[4]
+    ybus = np.empty((n, n), complex)  # empty array nXn
 
-    for i in range(n):  # ciclos anidados que recorren la matriz fila por fila para asignarles valor
+    for i in range(n):  # nested cycles that go through the matrix row by row to assign them value
         for j in range(n):
-            ybus[i, j] = valores(i+1, j+1, nodos1, nodos2, admitancias)
+            ybus[i, j] = values(i + 1, j + 1, nodes1, nodes2, admittances)
 
-    respuesta = int(input("\nintroduzca\n1 : si YBUS se está construyendo para un\
-     problema de flujos de potencia\n2: si YBUS se está construyendo para un análisis de corto circuito"))
-    if respuesta == 2:
+    reply = int(input("\nenter\n1 : if YBUS is being built for\
+     a power flux problem\n2: if YBUS is being built for a shor circuit analysis"))
+    if reply == 2:
         for i in range(n):
             ybus[i, i] += y_nodos[i, i]
 
-    respuesta = int(input("\nel sistema tiene susceptancias en paralelo ?\n 1 = si\n2 = no"))
-    if respuesta == 1:
+    reply = int(input("\ndo you want to take in account the parallel susceptances ?\n 1 = yes\n2 = no"))
+    if reply == 1:
         for i in range(n):
-            ybus[i, i] += valores(i+1, i+1, nodos1, nodos2, susceptancias)
+            ybus[i, i] += values(i + 1, i + 1, nodes1, nodes2, susceptancias)
     zbus = np.linalg.inv(ybus)
 
     with open("YBUS.txt", "w") as f:
         f.write("[")
-        primera_linea = False
+        first_line = False
         for i in range(n):
-            if primera_linea:
+            if first_line:
                 f.write(";\n")
             for j in range(n):
                 f.write(f"{str(ybus[i, j])}\t")
-                primera_linea = True
+                first_line = True
         f.write("]")
     with open("ZBUS.txt", "w") as f:
         f.write("[")
-        primera_linea = False
+        first_line = False
         for i in range(n):
-            if primera_linea:
+            if first_line:
                 f.write(";\n")
             for j in range(n):
                 f.write(f"{str(zbus[i, j])}\t")
-                primera_linea = True
+                first_line = True
         f.write("]")
 
     return [ybus, zbus]
 
 
-def valores(a, b, nodos1, nodos2, admitancias):  # calcula los valores para la matriz YBUS
-    valor = 0  # al crear una matriz vacía se asignan valores basura por eso se inicializa el valor en cero
+def values(a, b, nodos1, nodos2, admitancias):  # calculates the values for YBUS
+    value = 0  # When creating an empty matrix, random values are assigned, so the value is initialized to zero.
     n = len(nodos1)
-    if a == b:  # para los elementos en la diagonal
+    if a == b:  # for diagonal elements
         for i in range(n):
             if nodos1[i] == a:
-                valor += admitancias[i]
+                value += admitancias[i]
             elif nodos2[i] == a:
-                valor += admitancias[i]
-    else:  # elementos fuera de la diagonal (conexiones entre nodos)
+                value += admitancias[i]
+    else:  # off-diagonal elements (connections between nodes)
         for i in range(n):
             if (nodos1[i] == a) and (nodos2[i] == b):
-                valor += -admitancias[i]
+                value += -admitancias[i]
                 break
             elif (nodos1[i] == b) and (nodos2[i] == a):
-                valor += -admitancias[i]
+                value += -admitancias[i]
                 break
-    return valor
+    return value
 
 
-'''falla_entre_nodos(): retorna una lista con la información de la falla trifásica entre los nodos a y b,
-la lista es: [float corriente de falla, arreglo np ybus_falla, arreglo np Zbus_falla, lista nodos1_falla, 
-lista nodos2_falla, lista admitancias_falla].'''
+'''fault_between_nodes(): returns a list with the information of the three-phase fault between nodes a and b,
+the list is: [fault current, ybus_fault, Zbus_fault, nodes1_fault, nodes2_fault, fault_admittances].'''
 
 
-def falla_entre_nodos(a, b, nodos1, nodos2, admitancias):  # al 50 porciento de la linea
+def fault_between_nodes(a, b, nodos1, nodos2, admitancias):  # at 50% of the line
     n = len(nodos1)
     nodos1_falla = nodos1[:]
     nodos2_falla = nodos2[:]
@@ -179,7 +177,7 @@ def falla_entre_nodos(a, b, nodos1, nodos2, admitancias):  # al 50 porciento de 
             nodos2_falla.extend([a, b])
             admitancias_falla.extend([1/((1/admitancias[i])/2), 1/((1/admitancias[i])/2)])
             break
-    ybus_falla = y_bus(n+1, nodos1_falla, nodos2_falla, admitancias_falla)
+    ybus_falla = y_bus(n+1, nodos1_falla, nodos2_falla, admitancias_falla)  # need to be corrected
     zbus_falla = np.linalg.inv(ybus_falla)
     with open("YBUS_FALLA.txt", "w") as f:
         f.write("[")
@@ -204,8 +202,8 @@ def falla_entre_nodos(a, b, nodos1, nodos2, admitancias):  # al 50 porciento de 
     return [1/zbus_falla[n, n], ybus_falla, zbus_falla, nodos1_falla, nodos2_falla, admitancias_falla]
 
 
-''' remueve la linea ubicada entre los nodos a y b del sistema y modifica ybus y zbus para ese caso.
-si no se desea modificar el ybus original entonces envíe una copia'''
+'''' removes the line located between system nodes a and b and modify ybus and zbus for that case.
+if you do not want to modify the original ybus then send a copy'''
 
 
 def remover_linea_entre_nodos(a, b, ybus, nodos1, nodos2, admitancias):
@@ -220,11 +218,11 @@ def remover_linea_entre_nodos(a, b, ybus, nodos1, nodos2, admitancias):
     return [ybus, zbus]
 
 
-# no toma en cuenta la factorización PA=LU (no es necesario si la matriz que recibe es Ybus)
-def factor_lu(upper):  # retorna la factorización LU de la matriz (arreglo numpy) que recibe
+# does not take into account the factorization PA=LU (not necessary if the receiving matrix is Ybus).
+def factor_lu(upper):  # returns the LU factorization of the matrix (numpy array) that receives
     n = len(upper)
     lower = np.empty((n, n), complex)
-    for i in range(n):  # ciclos anidados que llenan a "lower" como una matriz identidad
+    for i in range(n):  # nested cycles filling "lower" as an identity matrix
         for j in range(n):
             if i == j:
                 lower[i, j] = 1
