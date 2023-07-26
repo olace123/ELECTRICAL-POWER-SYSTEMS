@@ -2,6 +2,10 @@ import sep
 from math import pi, cos, sin
 from cmath import phase
 
+""" function to solve the nonlinear power flux equation system, it returns the voltages at each bus and the power 
+generated or demanded at each bus
+"""
+
 
 def gauss_seidel(ybus, datos_de_barras):
     nodos = len(ybus)
@@ -63,10 +67,10 @@ def gauss_seidel(ybus, datos_de_barras):
     return [v, potencias]
 
 
-datos_de_lineas = sep.leer_archivo_datos_lineas("datosdelineas.txt")
-datos_de_barras = sep.leer_archivo_datos_de_barras("datosdebarras.txt")
-ybus = sep.ybus_zbus(datos_de_lineas, datos_de_barras)[0]
-[v, potencias] = gauss_seidel(ybus, datos_de_barras)
+line_data = sep.read_line_data_file("line_data.txt")
+bus_data = sep.read_bus_data_file("bus_data.txt")
+ybus = sep.ybus_zbus(line_data, bus_data)[0]
+[v, potencias] = gauss_seidel(ybus, bus_data)
 
 for i in range(len(v)):
     print(v[i].__abs__(), phase(v[i])*(180/pi))
@@ -75,3 +79,4 @@ print("\n POTENCIAS ( EN P.U)")
 
 for i in range(len(potencias)):
     print(potencias[i])
+    
