@@ -1,4 +1,4 @@
-import sep
+import sep # take a look at the sep module first 
 from math import pi, cos, sin
 from cmath import phase
 
